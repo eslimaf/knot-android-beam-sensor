@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">BeamSensor</string>
+    <string name="hint_cloud_ip">Cloud IP</string>
+    <string name="hint_port">Port</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
+    <string name="text_login">Login</string>
 </resources>
