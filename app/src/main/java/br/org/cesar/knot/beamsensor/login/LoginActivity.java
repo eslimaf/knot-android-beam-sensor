@@ -1,5 +1,6 @@
 package br.org.cesar.knot.beamsensor.login;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +10,7 @@ import android.util.Log;
 import android.widget.Button;
 
 import br.org.cesar.knot.beamsensor.R;
+import br.org.cesar.knot.beamsensor.map.SensorMapActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -104,5 +106,8 @@ public class LoginActivity extends AppCompatActivity {
     @OnClick(R.id.loginButton)
     void performLogin() {
         Log.d(TAG, "Login button pressed");
+        Intent i = new Intent(this, SensorMapActivity.class);
+        startActivity(i);
+        finish();
     }
 }
