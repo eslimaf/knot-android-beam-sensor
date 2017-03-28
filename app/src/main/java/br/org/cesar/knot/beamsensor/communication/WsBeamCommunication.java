@@ -24,8 +24,8 @@ public class WsBeamCommunication implements BeamCommunication {
     private static FacadeConnection connection;
     private static final String ENDPOINT_SCHEMA = "http";
     private static final String ENDPOINT = "";
-    private static final String UUID_OWNER = "4ab0258a-abe1-4b4e-8005-7e9817740000";
-    private static final String TOKEN_OWNER = "28ad19b1a837c89c1e91eb546a341e134d2379b7";
+    private static final String UUID_OWNER = "";
+    private static final String TOKEN_OWNER = "";
 
     public WsBeamCommunication() {
         if (connection == null)
@@ -37,11 +37,10 @@ public class WsBeamCommunication implements BeamCommunication {
         // Configuring the API
         try {
             String endPoint = getEndpoint(url,port);
-            connection.setupSocketIO(endPoint, UUID_OWNER, TOKEN_OWNER);
+            connection.setupSocketIO(endPoint, user, password);
             connection.socketIOAuthenticateDevice(new Event<Boolean>() {
                 @Override
                 public void onEventFinish(Boolean object) {
-                    boolean t = connection.isSocketConnected();
                 }
 
                 @Override
@@ -49,15 +48,12 @@ public class WsBeamCommunication implements BeamCommunication {
                     boolean t = connection.isSocketConnected();
                 }
             });
-
-           // connection.connectSocket(endPoint);
         } catch (SocketNotConnected socketNotConnected) {
             socketNotConnected.printStackTrace();
         } catch (URISyntaxException e) {
             throw new Exception("Bad formed URI",e);
         }
-
-        return connection.isSocketConnected();
+        return false;
     }
 
     public boolean close(){
