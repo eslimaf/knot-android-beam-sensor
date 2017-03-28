@@ -8,8 +8,10 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
 
 import br.org.cesar.knot.beamsensor.R;
+import br.org.cesar.knot.beamsensor.controller.BeamController;
 import br.org.cesar.knot.beamsensor.map.SensorMapActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -28,6 +30,8 @@ public class LoginActivity extends AppCompatActivity {
     TextInputEditText mPasswordEditText;
     @BindView(R.id.loginButton)
     Button mLoginButton;
+
+    BeamController beamController =  BeamController.getInstance();
 
     private TextWatcher mServerEmptyWatcher = new TextWatcher() {
         @Override
@@ -106,8 +110,18 @@ public class LoginActivity extends AppCompatActivity {
     @OnClick(R.id.loginButton)
     void performLogin() {
         Log.d(TAG, "Login button pressed");
-        Intent i = new Intent(this, SensorMapActivity.class);
-        startActivity(i);
-        finish();
+        String mCloudIp = mCloudIpEditText.getText().toString();
+        int mPort = Integer.parseInt(mPortEditText.getText().toString());
+        String mUsername = mUsernameEditText.getText().toString();
+        String mPassword = mPasswordEditText.getText().toString();
+        try {
+            if(beamController.openCommunication(mCloudIp,mPort,mUsername,mPassword)){
+                Intent i = new Intent(this, SensorMapActivity.class);
+                startActivity(i);
+                finish();
+            }
+        } catch (Exception e) {
+            Toast.makeText(this.getBaseContext(),e.getMessage(),Toast.LENGTH_SHORT);
+        }
     }
 }
