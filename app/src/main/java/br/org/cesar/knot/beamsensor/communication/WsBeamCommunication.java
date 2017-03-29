@@ -23,9 +23,6 @@ public class WsBeamCommunication implements BeamCommunication {
 
     private static FacadeConnection connection;
     private static final String ENDPOINT_SCHEMA = "http";
-    private static final String ENDPOINT = "";
-    private static final String UUID_OWNER = "";
-    private static final String TOKEN_OWNER = "";
 
     public WsBeamCommunication() {
         if (connection == null)
@@ -37,6 +34,7 @@ public class WsBeamCommunication implements BeamCommunication {
         // Configuring the API
         try {
             String endPoint = getEndpoint(url,port);
+
             connection.setupSocketIO(endPoint, user, password);
             connection.socketIOAuthenticateDevice(new Event<Boolean>() {
                 @Override
@@ -47,6 +45,7 @@ public class WsBeamCommunication implements BeamCommunication {
                 public void onEventError(Exception e) {
                 }
             });
+
         } catch (SocketNotConnected socketNotConnected) {
             socketNotConnected.printStackTrace();
         } catch (URISyntaxException e) {
@@ -55,6 +54,7 @@ public class WsBeamCommunication implements BeamCommunication {
 
         return connection.isSocketConnected();
     }
+
 
     public boolean close(){
         connection.disconnectSocket();

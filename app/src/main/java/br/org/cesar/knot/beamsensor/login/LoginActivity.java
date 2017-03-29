@@ -10,9 +10,13 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
+import java.util.List;
+
 import br.org.cesar.knot.beamsensor.R;
 import br.org.cesar.knot.beamsensor.controller.BeamController;
 import br.org.cesar.knot.beamsensor.map.SensorMapActivity;
+import br.org.cesar.knot.beamsensor.model.BeamSensor;
+import br.org.cesar.knot.beamsensor.model.BeamSensorFilter;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -116,9 +120,12 @@ public class LoginActivity extends AppCompatActivity {
         String mPassword = mPasswordEditText.getText().toString();
         try {
             if(beamController.openCommunication(mCloudIp,mPort,mUsername,mPassword)){
-                Intent i = new Intent(this, SensorMapActivity.class);
-                startActivity(i);
-                finish();
+                //Intent i = new Intent(this, SensorMapActivity.class);
+                //startActivity(i);
+                //finish();
+                BeamSensorFilter filter = new BeamSensorFilter();
+                List<BeamSensor> sensors = beamController.getSensor(filter);
+                int count = sensors.size();
             }
         } catch (Exception e) {
             Toast.makeText(this.getBaseContext(),e.getMessage(),Toast.LENGTH_SHORT);
