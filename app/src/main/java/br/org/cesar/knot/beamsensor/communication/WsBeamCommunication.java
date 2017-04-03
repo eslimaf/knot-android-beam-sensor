@@ -15,9 +15,8 @@ import br.org.cesar.knot.beamsensor.model.BeamSensor;
 import br.org.cesar.knot.beamsensor.model.BeamSensorFilter;
 import br.org.cesar.knot.lib.connection.FacadeConnection;
 import br.org.cesar.knot.lib.event.Event;
-import br.org.cesar.knot.lib.exception.SocketNotConnected;
 import br.org.cesar.knot.lib.model.KnotList;
-
+import java.lang.Boolean;
 
 public class WsBeamCommunication implements BeamCommunication {
 
@@ -30,36 +29,19 @@ public class WsBeamCommunication implements BeamCommunication {
 
     }
 
-    public boolean open(String url,int port,String user, String password) throws Exception {
+    public void open(String url,int port,String user, String password,Event<Boolean> callback) throws Exception {
         // Configuring the API
-        try {
-            String endPoint = getEndpoint(url,port);
-
-            connection.setupSocketIO(endPoint, user, password);
-            connection.socketIOAuthenticateDevice(new Event<Boolean>() {
-                @Override
-                public void onEventFinish(Boolean object) {
-                }
-
-                @Override
-                public void onEventError(Exception e) {
-                }
-            });
-
-        } catch (SocketNotConnected socketNotConnected) {
-            socketNotConnected.printStackTrace();
-        } catch (URISyntaxException e) {
-            throw new Exception("Bad formed URI",e);
-        }
-
-        return connection.isSocketConnected();
+        String endPoint = getEndpoint(url, port);
+        connection.setupSocketIO(endPoint, user, password);
+        connection.socketIOAuthenticateDevice(callback);
     }
 
-
+    @Override
     public boolean close(){
         connection.disconnectSocket();
         return connection.isSocketConnected();
     }
+
 
     @Override
     public List<BeamSensor> getSensors(BeamSensorFilter filter) {

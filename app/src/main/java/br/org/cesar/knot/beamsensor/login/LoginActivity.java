@@ -17,6 +17,7 @@ import br.org.cesar.knot.beamsensor.controller.BeamController;
 import br.org.cesar.knot.beamsensor.map.SensorMapActivity;
 import br.org.cesar.knot.beamsensor.model.BeamSensor;
 import br.org.cesar.knot.beamsensor.model.BeamSensorFilter;
+import br.org.cesar.knot.lib.event.Event;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -82,6 +83,11 @@ public class LoginActivity extends AppCompatActivity {
 
         mUsernameEditText.addTextChangedListener(mCredentialsEmptyWatcher);
         mPasswordEditText.addTextChangedListener(mCredentialsEmptyWatcher);
+
+        mCloudIpEditText.setText("10.211.55.19");
+        mPortEditText.setText("3000");
+        mUsernameEditText.setText("calberto");
+        mPasswordEditText.setText("123456");
     }
 
     private void enableCredentialsEditText(boolean enable) {
@@ -119,14 +125,24 @@ public class LoginActivity extends AppCompatActivity {
         String mUsername = mUsernameEditText.getText().toString();
         String mPassword = mPasswordEditText.getText().toString();
         try {
-            if(beamController.openCommunication(mCloudIp,mPort,mUsername,mPassword)){
-                //Intent i = new Intent(this, SensorMapActivity.class);
-                //startActivity(i);
-                //finish();
-                BeamSensorFilter filter = new BeamSensorFilter();
-                List<BeamSensor> sensors = beamController.getSensor(filter);
-                int count = sensors.size();
-            }
+            beamController.openCommunication(mCloudIp,mPort,mUsername,mPassword,new Event<Boolean>(){
+                @Override
+                public void onEventFinish(Boolean object) {
+                    if(object.booleanValue()) {
+                        Log.d("Carlos", "Opened");
+                        Intent i = new Intent(getBaseContext(), SensorMapActivity.class);
+                        startActivity(i);
+                        finish();
+                        //Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT);
+                    }
+                }
+
+                @Override
+                public void onEventError(Exception e) {
+                    Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT);
+                }
+            });
+
         } catch (Exception e) {
             Toast.makeText(this.getBaseContext(),e.getMessage(),Toast.LENGTH_SHORT);
         }
