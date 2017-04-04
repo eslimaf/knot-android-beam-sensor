@@ -32,8 +32,8 @@ public class WsBeamCommunication implements BeamCommunication {
     public void open(String url,int port,String user, String password,Event<Boolean> callback) throws Exception {
         // Configuring the API
         String endPoint = getEndpoint(url, port);
-        connection.setupSocketIO(endPoint, user, password);
-        connection.socketIOAuthenticateDevice(callback);
+//        connection.setupSocketIO(endPoint, user, password);
+//        connection.socketIOAuthenticateDevice(callback);
     }
 
     @Override
