@@ -7,14 +7,9 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.Button;
-import android.widget.Toast;
-
 import br.org.cesar.knot.beamsensor.R;
 import br.org.cesar.knot.beamsensor.communication.Communication;
 import br.org.cesar.knot.beamsensor.controller.BeamController;
-import br.org.cesar.knot.beamsensor.map.SensorMapActivity;
-import br.org.cesar.knot.lib.event.Event;
-import br.org.cesar.knot.lib.exception.SocketNotConnected;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
