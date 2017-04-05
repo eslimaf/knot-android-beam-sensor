@@ -1,5 +1,6 @@
 package br.org.cesar.knot.beamsensor.login;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -7,14 +8,29 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.Toast;
+
+import org.json.JSONException;
+
+import java.util.List;
+
 import br.org.cesar.knot.beamsensor.R;
 import br.org.cesar.knot.beamsensor.communication.Communication;
 import br.org.cesar.knot.beamsensor.controller.BeamController;
+import br.org.cesar.knot.beamsensor.map.SensorMapActivity;
+import br.org.cesar.knot.beamsensor.model.BeamSensor;
+import br.org.cesar.knot.beamsensor.model.BeamSensorFilter;
+import br.org.cesar.knot.beamsensor.model.Subscriber;
+import br.org.cesar.knot.beamsensor.model.SubscriberDataListener;
+import br.org.cesar.knot.lib.event.Event;
+import br.org.cesar.knot.lib.exception.InvalidParametersException;
+import br.org.cesar.knot.lib.exception.KnotException;
+import br.org.cesar.knot.lib.exception.SocketNotConnected;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class LoginActivity extends AppCompatActivity implements Communication.OpenConnectionListener {
+public class LoginActivity extends AppCompatActivity implements SubscriberDataListener {
     private static final String TAG = LoginActivity.class.getSimpleName();
 
     @BindView(R.id.loginTextInputAddress)
@@ -28,7 +44,7 @@ public class LoginActivity extends AppCompatActivity implements Communication.Op
     @BindView(R.id.loginButton)
     Button mLoginButton;
 
-    private Communication mKnotSocketCommunication;
+    //private Communication mKnotSocketCommunication;
     BeamController beamController = BeamController.getInstance();
 
     private TextWatcher mServerEmptyWatcher = new TextWatcher() {
@@ -71,18 +87,18 @@ public class LoginActivity extends AppCompatActivity implements Communication.Op
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
 
-        mKnotSocketCommunication = Communication.getInstance();
+        //mKnotSocketCommunication = Communication.getInstance();
 
-        mCloudIpEditText.addTextChangedListener(mServerEmptyWatcher);
+                        mCloudIpEditText.addTextChangedListener(mServerEmptyWatcher);
         mPortEditText.addTextChangedListener(mServerEmptyWatcher);
 
         mUsernameEditText.addTextChangedListener(mCredentialsEmptyWatcher);
         mPasswordEditText.addTextChangedListener(mCredentialsEmptyWatcher);
 
-        mCloudIpEditText.setText("172.17.120.174");
+        mCloudIpEditText.setText("10.211.55.19");
         mPortEditText.setText("3000");
-        mUsernameEditText.setText("5477b005-5637-453d-a8c7-4882dc590000");
-        mPasswordEditText.setText("0289db9c55b89663b0bf0eb1eabad0e242f79e70");
+        mUsernameEditText.setText("calberto");
+        mPasswordEditText.setText("123456");
     }
 
     private void enableCredentialsEditText(boolean enable) {
@@ -112,14 +128,15 @@ public class LoginActivity extends AppCompatActivity implements Communication.Op
         }
     }
 
-//    @OnClick(R.id.loginButton)
-//    void performLogin() {
-//        Log.d(TAG, "Login button pressed");
-//        String mCloudIp = mCloudIpEditText.getText().toString();
-//        int mPort = Integer.parseInt(mPortEditText.getText().toString());
-//        String mUsername = mUsernameEditText.getText().toString();
-//        String mPassword = mPasswordEditText.getText().toString();
-//        try {
+    @OnClick(R.id.loginButton)
+    void performLogin() {
+        Log.d(TAG, "Login button pressed");
+        String mCloudIp = mCloudIpEditText.getText().toString();
+        int mPort = Integer.parseInt(mPortEditText.getText().toString());
+        String mUsername = mUsernameEditText.getText().toString();
+        String mPassword = mPasswordEditText.getText().toString();
+        try {
+            beamController.openCommunication(mCloudIp,mPort,mUsername,mPassword,this);
 //            beamController.openCommunication(mCloudIp,mPort,mUsername,mPassword,new Event<Boolean>(){
 //                @Override
 //                public void onEventFinish(Boolean object) {
@@ -137,33 +154,77 @@ public class LoginActivity extends AppCompatActivity implements Communication.Op
 //                    Toast.makeText(getBaseContext(), e.getMessage(), Toast.LENGTH_SHORT);
 //                }
 //            });
-//
-//        } catch (Exception e) {
-//            Toast.makeText(this.getBaseContext(),e.getMessage(),Toast.LENGTH_SHORT);
-//        }
-//    }
 
-    @OnClick(R.id.loginButton)
-    void performLogin() {
-        Log.d(TAG, "Login button pressed");
-        String userName = mUsernameEditText.getText().toString();
-        String password = mPasswordEditText.getText().toString();
+        } catch (Exception e) {
+            Toast.makeText(this.getBaseContext(),e.getMessage(),Toast.LENGTH_SHORT);
+        }
+    }
+
+    private Exception currentException;
+    @Override
+    public void setError(Exception error) {
+        Log.d("Login",error.getMessage());
+        currentException = error;
+    }
+
+    @Override
+    public Exception getError() {
+        return currentException;
+    }
+
+    @Override
+    public int getId() {
+        return 1;
+    }
+
+    @Override
+    public void ready() {
+        Log.d("Login","Subscriber Ready");
+        beamController.subscribeDataListener(this);
+        try {
+            beamController.getSensor(new BeamSensorFilter());
+        } catch (InvalidParametersException e) {
+                                    e.printStackTrace();
+        } catch (SocketNotConnected socketNotConnected) {
+            socketNotConnected.printStackTrace();
+        } catch (KnotException e) {
+            e.printStackTrace();
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void notReady() {
+        Log.d("Login","Subscriber Not Ready");
+    }
+
+    List<BeamSensor> currentData;
+
+    @Override
+    public void setData(List<BeamSensor> data) {
+        currentData = data;
+        for (int i = 0; i < data.size(); i++){
+            Log.d("BeamSensor",data.get(i).getUuid());
+        }
+    }
+
+    @Override
+    public List<BeamSensor> getData() {
+        return currentData;
+    }
+
+    //  @OnClick(R.id.loginButton)
+  //  void performLogin() {
+  //      Log.d(TAG, "Login button pressed");
+  //      String userName = mUsernameEditText.getText().toString();
+  //      String password = mPasswordEditText.getText().toString();
 
         //Configuring socket with uuid and socket
-        mKnotSocketCommunication.configureSocketWithDeviceInformation(userName,password);
+        //mKnotSocketCommunication.configureSocketWithDeviceInformation(userName,password);
 
-        mKnotSocketCommunication.openConnection("http://172.17.120.174:3000",this);
+        //mKnotSocketCommunication.openConnection("http://172.17.120.174:3000",this);
 
-    }
+   // }
 
-
-    @Override
-    public void socketConnected() {
-        Log.d(TAG, "Socket connected");
-    }
-
-    @Override
-    public void socketNotConnected() {
-        Log.d(TAG, "Socket not connected");
-    }
 }

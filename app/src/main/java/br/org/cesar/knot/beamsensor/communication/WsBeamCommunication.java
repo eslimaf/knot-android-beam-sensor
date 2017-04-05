@@ -6,58 +6,66 @@
 package br.org.cesar.knot.beamsensor.communication;
 
 
+import org.json.JSONException;
+
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import br.org.cesar.knot.beamsensor.model.BeamSensor;
 import br.org.cesar.knot.beamsensor.model.BeamSensorFilter;
+import br.org.cesar.knot.beamsensor.model.Subscriber;
+import br.org.cesar.knot.beamsensor.model.SubscriberDataListener;
 import br.org.cesar.knot.lib.connection.FacadeConnection;
 import br.org.cesar.knot.lib.event.Event;
+import br.org.cesar.knot.lib.exception.InvalidParametersException;
+import br.org.cesar.knot.lib.exception.KnotException;
 import br.org.cesar.knot.lib.exception.SocketNotConnected;
 import br.org.cesar.knot.lib.model.KnotList;
 import java.lang.Boolean;
 
-public class WsBeamCommunication implements BeamCommunication {
+public class WsBeamCommunication implements BeamCommunication, Communication.OpenConnectionListener {
 
     private static FacadeConnection connection;
     private static final String ENDPOINT_SCHEMA = "http";
-    private static final String ENDPOINT = "";
-    private static final String UUID_OWNER = "";
-    private static final String TOKEN_OWNER = "";
+    private HashMap<Integer,SubscriberDataListener> subscribers = new HashMap<>();
+    private Subscriber subscriber;
 
     public WsBeamCommunication() {
         if (connection == null)
             connection = FacadeConnection.getInstance();
 
+        connection.createSocketIo();
+
     }
 
-    public void open(String url,int port,String user, String password,Event<Boolean> callback) throws Exception {
-        // Configuring the API
+    public void subscriberListener(SubscriberDataListener subscribeDataListener){
+        getSubscribers().put(new Integer(subscribeDataListener.getId()),subscribeDataListener);
+    }
 
-        try {
-            String endPoint = getEndpoint(url,port);
-            connection.setupSocketIO(endPoint, user, password);
-            connection.socketIOAuthenticateDevice(new Event<Boolean>() {
-                @Override
-                public void onEventFinish(Boolean object) {
+    public void open(String url,int port,String user, String password,Subscriber subscriber) throws Exception {
+        setSubscriber(subscriber);
+        String endPoint = getEndpoint(url,port);
+        connection.setupSocketIO(user, password);
+        connection.connectSocket(endPoint, new Event<Boolean>() {
+            @Override
+            public void onEventFinish(Boolean object) {
+                try {
+                    authenticate();
+                } catch (InvalidParametersException e) {
+                    e.printStackTrace();
+                } catch (SocketNotConnected socketNotConnected) {
+                    socketNotConnected.printStackTrace();
                 }
+            }
 
-                @Override
-                public void onEventError(Exception e) {
-                    boolean t = connection.isSocketConnected();
-                }
-            });
-        } catch (SocketNotConnected socketNotConnected) {
-            socketNotConnected.printStackTrace();
-        } catch (URISyntaxException e) {
-            throw new Exception("Bad formed URI",e);
-        }
+            @Override
+            public void onEventError(Exception e) {
 
-        String endPoint = getEndpoint(url, port);
-//        connection.setupSocketIO(endPoint, user, password);
-//        connection.socketIOAuthenticateDevice(callback);
+            }
+        });
+
     }
 
     @Override
@@ -66,9 +74,8 @@ public class WsBeamCommunication implements BeamCommunication {
         return connection.isSocketConnected();
     }
 
-
-    @Override
-    public List<BeamSensor> getSensors(BeamSensorFilter filter) {
+  /*  @Override
+    public void getSensors(BeamSensorFilter filter) {
         final List<BeamSensor> result = new ArrayList<>();
         try{
             connection.socketIOGetDeviceList(new KnotList<>(BeamSensor.class), filter.getQuery(), new Event<List<BeamSensor>>() {
@@ -93,8 +100,79 @@ public class WsBeamCommunication implements BeamCommunication {
         return result;
     }
 
+    */
+
+    public void getSensors(BeamSensorFilter filter) throws JSONException, InvalidParametersException,
+            KnotException, SocketNotConnected {
+        KnotList<BeamSensor> list = new KnotList<>(BeamSensor.class);
+        connection.socketIOGetDeviceList(list, filter.getQuery(), new Event<List<BeamSensor>>() {
+            @Override
+            public void onEventFinish(List<BeamSensor> object) {
+                for (SubscriberDataListener listener :
+                        getSubscribers().values()) {
+                    listener.setData(object);
+                }
+            }
+            @Override
+            public void onEventError(Exception e) {
+                for (SubscriberDataListener listener :
+                        getSubscribers().values()) {
+                    listener.setError(e);
+                }
+            }
+        });
+    }
+
     private String getEndpoint(String url,int port) throws URISyntaxException {
         URI uri = new URI(ENDPOINT_SCHEMA,null,url,port,null,null,null);
         return uri.toASCIIString();
+    }
+
+    private void authenticate() throws InvalidParametersException, SocketNotConnected {
+        final WsBeamCommunication that = this;
+        connection.socketIOAuthenticateDevice(new Event<Boolean>() {
+
+            @Override
+            public void onEventFinish(Boolean object) {
+                if(object.booleanValue())
+                {
+                    that.socketConnected();
+                }
+            }
+
+            @Override
+            public void onEventError(Exception e) {
+
+                that.socketNotConnected();
+            }
+        });
+    }
+
+
+    @Override
+    public void socketConnected() {
+        getSubscriber().ready();
+    }
+
+    @Override
+    public void socketNotConnected() {
+
+    }
+
+
+    public Subscriber getSubscriber() {
+        return subscriber;
+    }
+
+    public void setSubscriber(Subscriber subscriber) {
+        this.subscriber = subscriber;
+    }
+
+    public HashMap<Integer, SubscriberDataListener> getSubscribers() {
+        return subscribers;
+    }
+
+    public void setSubscribers(HashMap<Integer, SubscriberDataListener> subscribers) {
+        this.subscribers = subscribers;
     }
 }
