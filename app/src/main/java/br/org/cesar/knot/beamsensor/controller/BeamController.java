@@ -11,6 +11,7 @@ import br.org.cesar.knot.beamsensor.communication.BeamCommunication;
 import br.org.cesar.knot.beamsensor.communication.BeamCommunicationFactory;
 import br.org.cesar.knot.beamsensor.model.BeamSensor;
 import br.org.cesar.knot.beamsensor.model.BeamSensorFilter;
+import br.org.cesar.knot.lib.event.Event;
 
 /**
  * Created by carlos on 14/03/17.
@@ -37,9 +38,9 @@ public class BeamController {
        return communication.getSensors(filter);
     }
 
-    public boolean openCommunication(String url,int port,String user, String password) throws Exception {
-        return communication.open(url,port
-                ,user,password);
+    public void openCommunication(String url, int port, String user, String password, Event<Boolean> event) throws Exception {
+        communication.open(url, port
+                , user, password, event);
     }
 
     /*

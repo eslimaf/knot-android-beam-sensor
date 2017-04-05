@@ -17,7 +17,7 @@ import br.org.cesar.knot.lib.connection.FacadeConnection;
 import br.org.cesar.knot.lib.event.Event;
 import br.org.cesar.knot.lib.exception.SocketNotConnected;
 import br.org.cesar.knot.lib.model.KnotList;
-
+import java.lang.Boolean;
 
 public class WsBeamCommunication implements BeamCommunication {
 
@@ -33,8 +33,9 @@ public class WsBeamCommunication implements BeamCommunication {
 
     }
 
-    public boolean open(String url,int port,String user, String password) throws Exception {
+    public void open(String url,int port,String user, String password,Event<Boolean> callback) throws Exception {
         // Configuring the API
+
         try {
             String endPoint = getEndpoint(url,port);
             connection.setupSocketIO(endPoint, user, password);
@@ -53,13 +54,18 @@ public class WsBeamCommunication implements BeamCommunication {
         } catch (URISyntaxException e) {
             throw new Exception("Bad formed URI",e);
         }
-        return false;
+
+        String endPoint = getEndpoint(url, port);
+//        connection.setupSocketIO(endPoint, user, password);
+//        connection.socketIOAuthenticateDevice(callback);
     }
 
+    @Override
     public boolean close(){
         connection.disconnectSocket();
         return connection.isSocketConnected();
     }
+
 
     @Override
     public List<BeamSensor> getSensors(BeamSensorFilter filter) {
