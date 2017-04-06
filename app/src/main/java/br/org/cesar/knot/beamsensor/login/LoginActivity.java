@@ -1,6 +1,5 @@
 package br.org.cesar.knot.beamsensor.login;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -15,14 +14,11 @@ import org.json.JSONException;
 import java.util.List;
 
 import br.org.cesar.knot.beamsensor.R;
-import br.org.cesar.knot.beamsensor.communication.Communication;
 import br.org.cesar.knot.beamsensor.controller.BeamController;
-import br.org.cesar.knot.beamsensor.map.SensorMapActivity;
 import br.org.cesar.knot.beamsensor.model.BeamSensor;
+import br.org.cesar.knot.beamsensor.model.BeamSensorData;
 import br.org.cesar.knot.beamsensor.model.BeamSensorFilter;
-import br.org.cesar.knot.beamsensor.model.Subscriber;
 import br.org.cesar.knot.beamsensor.model.SubscriberDataListener;
-import br.org.cesar.knot.lib.event.Event;
 import br.org.cesar.knot.lib.exception.InvalidParametersException;
 import br.org.cesar.knot.lib.exception.KnotException;
 import br.org.cesar.knot.lib.exception.SocketNotConnected;
@@ -199,32 +195,27 @@ public class LoginActivity extends AppCompatActivity implements SubscriberDataLi
         Log.d("Login","Subscriber Not Ready");
     }
 
-    List<BeamSensor> currentData;
+    List<BeamSensor> devices;
+    List<BeamSensorData> data;
 
     @Override
-    public void setData(List<BeamSensor> data) {
-        currentData = data;
-        for (int i = 0; i < data.size(); i++){
-            Log.d("BeamSensor",data.get(i).getUuid());
-        }
+    public void setData(List<BeamSensorData> data) {
+        this.data = data;
     }
 
     @Override
-    public List<BeamSensor> getData() {
-        return currentData;
+    public List<BeamSensorData> getData() {
+        return this.data;
     }
 
-    //  @OnClick(R.id.loginButton)
-  //  void performLogin() {
-  //      Log.d(TAG, "Login button pressed");
-  //      String userName = mUsernameEditText.getText().toString();
-  //      String password = mPasswordEditText.getText().toString();
+    @Override
+    public void setDeviceList(List<BeamSensor> devices) {
+        this.devices = devices;
+    }
 
-        //Configuring socket with uuid and socket
-        //mKnotSocketCommunication.configureSocketWithDeviceInformation(userName,password);
-
-        //mKnotSocketCommunication.openConnection("http://172.17.120.174:3000",this);
-
-   // }
+    @Override
+    public List<BeamSensor> getDevices() {
+        return devices;
+    }
 
 }

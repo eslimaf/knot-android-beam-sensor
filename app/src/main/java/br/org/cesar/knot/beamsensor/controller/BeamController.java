@@ -11,6 +11,7 @@ import br.org.cesar.knot.beamsensor.model.SubscriberDataListener;
 import br.org.cesar.knot.lib.exception.InvalidParametersException;
 import br.org.cesar.knot.lib.exception.KnotException;
 import br.org.cesar.knot.lib.exception.SocketNotConnected;
+import br.org.cesar.knot.lib.model.KnotQueryData;
 
 /**
  * Created by carlos on 14/03/17.
@@ -39,6 +40,10 @@ public class BeamController {
 
     public void getSensor(BeamSensorFilter filter) throws InvalidParametersException, SocketNotConnected, KnotException, JSONException {
        communication.getSensors(filter);
+    }
+
+    public void getData(KnotQueryData filter,String uuid,String token) throws InvalidParametersException, SocketNotConnected, KnotException, JSONException {
+        communication.getData(filter,uuid,token);
     }
 
     public void openCommunication(String url, int port, String user, String password, Subscriber listener) throws Exception {

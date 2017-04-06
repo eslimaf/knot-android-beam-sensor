@@ -13,16 +13,21 @@ import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.List;
 
+import br.org.cesar.knot.beamsensor.controller.BeamController;
 import br.org.cesar.knot.beamsensor.model.BeamSensor;
+import br.org.cesar.knot.beamsensor.model.BeamSensorData;
 import br.org.cesar.knot.beamsensor.model.BeamSensorFilter;
 import br.org.cesar.knot.beamsensor.model.Subscriber;
 import br.org.cesar.knot.beamsensor.model.SubscriberDataListener;
 import br.org.cesar.knot.lib.connection.FacadeConnection;
+import br.org.cesar.knot.lib.model.AbstractThingData;
 import br.org.cesar.knot.lib.event.Event;
 import br.org.cesar.knot.lib.exception.InvalidParametersException;
 import br.org.cesar.knot.lib.exception.KnotException;
 import br.org.cesar.knot.lib.exception.SocketNotConnected;
 import br.org.cesar.knot.lib.model.KnotList;
+import br.org.cesar.knot.lib.model.KnotQueryData;
+
 import java.lang.Boolean;
 
 public class WsBeamCommunication implements BeamCommunication, Communication.OpenConnectionListener {
@@ -110,9 +115,31 @@ public class WsBeamCommunication implements BeamCommunication, Communication.Ope
             public void onEventFinish(List<BeamSensor> object) {
                 for (SubscriberDataListener listener :
                         getSubscribers().values()) {
+                    listener.setDeviceList(object);
+                }
+            }
+            @Override
+            public void onEventError(Exception e) {
+                for (SubscriberDataListener listener :
+                        getSubscribers().values()) {
+                    listener.setError(e);
+                }
+            }
+        });
+    }
+
+    public void getData(KnotQueryData filter,String uuid,String token) throws JSONException, InvalidParametersException,
+            KnotException, SocketNotConnected {
+        KnotList<BeamSensorData> list = new KnotList<>(BeamSensorData.class);
+        connection.socketIOGetData(list, uuid, token, filter, new Event<List<BeamSensorData>>() {
+            @Override
+            public void onEventFinish(List<BeamSensorData> object) {
+                for (SubscriberDataListener listener :
+                        getSubscribers().values()) {
                     listener.setData(object);
                 }
             }
+
             @Override
             public void onEventError(Exception e) {
                 for (SubscriberDataListener listener :

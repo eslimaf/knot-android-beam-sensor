@@ -8,7 +8,11 @@ import java.util.List;
 
 public interface SubscriberDataListener extends Subscriber{
 
-    void setData(List<BeamSensor> data);
+    void setData(List<BeamSensorData> data);
 
-    List<BeamSensor> getData();
+    List<BeamSensorData> getData();
+
+    void setDeviceList(List<BeamSensor> devices);
+
+    List<BeamSensor> getDevices();
 }
